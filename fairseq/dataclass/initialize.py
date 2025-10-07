@@ -20,12 +20,14 @@ def hydra_init(cfg_name="config") -> None:
 
     for k in FairseqConfig.__dataclass_fields__:
         v = FairseqConfig.__dataclass_fields__[k].default
+        # Skip _MISSING_TYPE objects which cause validation errors in Python 3.12
+        if hasattr(v, '__class__') and v.__class__.__name__ == '_MISSING_TYPE':
+            continue
         try:
             cs.store(name=k, node=v)
         except BaseException:
             logger.error(f"{k} - {v}")
             raise
-
 
 def add_defaults(cfg: DictConfig) -> None:
     """This function adds default values that are stored in dataclasses that hydra doesn't know about"""
